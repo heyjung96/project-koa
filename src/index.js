@@ -13,7 +13,16 @@ if (process.env.NODE_ENV === "develop") {
 /* router */
 router.post("/users/join", koabody(), async (ctx) => {
   var data = ctx.request.body;
-  var str = user.JoinUser(data);
+  const statusCode = await user.JoinUser(data);
+  if (statusCode == 200) {
+    data = "회원가입 완료되었습니다.";
+  } else if (statusCode == 400) {
+    data = "필수값이 누락되어있습니다.";
+  } else if (statusCode == 403) {
+    data = "이미 가입되어있는 이메일입니다.";
+  } else {
+    data = "쿼리에러입니다.";
+  }
   ctx.body = data;
 });
 

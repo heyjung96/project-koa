@@ -3,6 +3,11 @@ const pool = require("../config/mysqlConfig");
 const validator = require("email-validator");
 
 async function insertUser(obj) {
+  /* null check */
+  if (!obj.email || !obj.pwd || !obj.nickname || !obj.birthday) {
+    return 400;
+  }
+
   let sql = `INSERT INTO user (email, pwd, nickname, birthday) VALUES (?, ?, ?, ?)`;
 
   /* 이메일 형식 검사 */
@@ -32,6 +37,7 @@ async function insertUser(obj) {
 }
 
 async function selectUser(obj) {
+  console.log("중복 유저 검사");
   /* 이메일 중복 검사 */
   let sql = `SELECT email,withdrawel FROM user WHERE email = ? AND withdrawel = 0`;
   var aParameter = [obj];
