@@ -1,25 +1,23 @@
 const Koa = require("koa");
 const Router = require("koa-router");
+const koabody = require("koa-body");
 
 const app = new Koa();
 const router = new Router();
 const user = require("./controller/Join");
 
+if (process.env.NODE_ENV === "develop") {
+  require("dotenv").config();
+}
+
 /* router */
-router.post("/users/join", (ctx, next) => {
-  var data = ctx;
+router.post("/users/join", koabody(), async (ctx) => {
+  var data = ctx.request.body;
   var str = user.JoinUser(data);
-  console.log(str);
-
-  console.log("지나갑니d다");
-  // console.log(ctx.req);
-  ctx.body = str;
-
-  // ctx.body += "홈";
+  ctx.body = data;
 });
 
 router.get("/", (ctx, next) => {
-  console.log("지나갑니다");
   ctx.body = "홈";
 });
 

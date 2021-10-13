@@ -1,17 +1,13 @@
 var mysql = require("mysql");
 var util = require("util");
-
-let auth = {};
-if (process.env.DATABASE_AUTHINFO) {
-  auth = JSON.parse(process.env.DATABASE_AUTHINFO);
-}
+require("dotenv").config();
 
 let pool = mysql.createPool({
   host: process.env.DB_HOST,
   port: "3306",
-  user: auth.username,
-  password: auth.password,
-  database: process.env.DB_PREFIX,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_DATABASE,
   timezone: process.env.DB_TIMEZONE,
   connectionLimit: 100, //연결갯수 제한 (기본 10인데 10000으로 늘림.)
 });
@@ -31,5 +27,6 @@ pool.getConnection((err, connection) => {
   if (connection) connection.release();
   return;
 });
+
 pool.query = util.promisify(pool.query);
 module.exports = pool;
