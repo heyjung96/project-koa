@@ -1,11 +1,13 @@
 const passport = require("koa-passport");
 console.log("/model/auth");
+const { loginUser } = require("../model/User");
 
 const fetchUser = (() => {
   console.log("/model/auth fetchUser");
   // This is an example! Use password hashing in your project and avoid storing passwords in your code
-  const user = { id: 1, username: "test", password: "test" };
-  return async function () {
+
+  return async function (username, password) {
+    user = await loginUser(username, password)
     return user;
   };
 })();
@@ -28,15 +30,14 @@ passport.deserializeUser(async function (id, done) {
 const LocalStrategy = require("passport-local").Strategy;
 passport.use(
   new LocalStrategy(function (username, password, done) {
-    console.log("LocalStrategy");
-    fetchUser()
+    console.log("LocalStrategy password >> ",password);
+    fetchUser(username, password)
       .then((user) => {
         console.log("LocalStrategy", user);
-        if (username === user.username && password === user.password) {
-          console.log("LocalStrategy if", user);
-          done(null, user);
+
+        if (user === true) {  //회원 - 로그인 성공
+          done(null, username);
         } else {
-          console.log("LocalStrategy else", user);
           done(null, false);
         }
       })

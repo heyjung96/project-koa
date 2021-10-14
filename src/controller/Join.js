@@ -3,18 +3,9 @@ const { Passport } = require("passport");
 const moment = require("moment");
 const validator = require("validator");
 
-const bcrypt = require("bcrypt"); //암호화
-const saltRounds = 10;
-const myPlaintextPassword = "1234";
-const someOtherPlaintextPassword = "not_bacon";
-
 exports.JoinUser = async function (data) {
   let { email, pwd, nickname, birthday } = data;
   let result = {};
-
-  /* DB에 유저 넣기 */
-  const statusCode = await insertUser(data);
-  result.statusCode = statusCode;
 
   /* null check */
   if (!email || !pwd || !nickname || !birthday) {
@@ -65,6 +56,12 @@ exports.JoinUser = async function (data) {
     result.message = "이미 가입되어있는 이메일입니다";
     return result;
   }
+  
+  
+  /* DB에 유저 넣기 */
+  const statusCode = await insertUser(data);
+  result.statusCode = statusCode;
+
 
   if (statusCode == 200) {
     result.message = "회원가입 완료되었습니다.";
