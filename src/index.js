@@ -26,8 +26,8 @@ router.get("/", (ctx, next) => {
   ctx.body = "홈";
 });
 
-////////////////////////////////////////////////////
 
+/* login START */
 const passport = require("koa-passport");
 require("./controller/auth");
 
@@ -42,14 +42,26 @@ router.post("/login/local", function (ctx) {
     }
   })(ctx);
 });
-////////////////////////////////////////////////////
+
+router.post("/login/facdbook", function (ctx) {
+  return passport.authenticate("facdbook", function (err, user, info, status) {
+    if (user === false) {
+      ctx.body = { success: false };
+      ctx.throw(401);
+    } else {  //참
+      ctx.status = 200;
+      ctx.body = "너는 회원입니다이다 ";
+    }
+  })(ctx);
+});
+/* login END */
 
 
 /* app */
 app.use(router.routes());
 app.use(router.allowedMethods());
 
-/////////////////////////////////////////////////
+
 // Require authentication for now
 app.use(function (ctx, next) {
   if (ctx.isAuthenticated()) {
@@ -59,7 +71,6 @@ app.use(function (ctx, next) {
   }
 });
 
-/////////////////////////////////////////////////
 app.listen(3000, () => {
   console.log("Listening to port 3000!");
 });

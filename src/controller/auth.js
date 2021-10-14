@@ -45,20 +45,18 @@ passport.use(
   })
 );
 
-// const FacebookStrategy = require("passport-facebook").Strategy;
-// passport.use(
-//   new FacebookStrategy(
-//     {
-//       clientID: "your-client-id",
-//       clientSecret: "your-secret",
-//       callbackURL:
-//         "http://localhost:" +
-//         (process.env.PORT || 3000) +
-//         "/auth/facebook/callback",
-//     },
-//     function (token, tokenSecret, profile, done) {
-//       // retrieve user ...
-//       fetchUser().then((user) => done(null, user));
-//     }
-//   )
-// );
+const FacebookStrategy = require("passport-facebook").Strategy;
+passport.use(
+  new FacebookStrategy(
+    {
+      clientID: process.env.FACEBOOK_APP_SECRET,
+      clientSecret: process.env.FACEBOOK_APP_ID,
+      callbackURL:
+        "http://localhost:3000/auth/facebook/callback",
+    },
+    function (token, tokenSecret, profile, done) {
+      // retrieve user ...
+      fetchUser().then((user) => done(null, user));
+    }
+  )
+);
