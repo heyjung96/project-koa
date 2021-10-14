@@ -1,31 +1,34 @@
 const mysql = require("mysql");
 const pool = require("../config/mysqlConfig");
-const validator = require("email-validator");
+
+const bcrypt = require("bcrypt"); //암호화
+const saltRounds = 10;
 
 async function insertUser(obj) {
-  /* null check */
-  if (!obj.email || !obj.pwd || !obj.nickname || !obj.birthday) {
-    return 400;
+  const { email, pwd, nickname, birthday } = obj;
+  if (!email || !pwd || !nickname || !birthday) {
+    result.statusCode = 400;
+    result.message = "필수값이 누락되어있습니다.";
+    return result;
   }
-
-  let sql = `INSERT INTO user (email, pwd, nickname, birthday) VALUES (?, ?, ?, ?)`;
-
-  /* 이메일 형식 검사 */
-  if (validator.validate(obj.email) == true) {
-    var aParameter = [obj.email, obj.pwd, obj.nickname, obj.birthday];
-
-    /* 이메일 중복 검사 */
-    const userDuplicateResult = await selectUser(obj.email);
-    if (userDuplicateResult != 202) {
-      return 403;
-    }
-  } else {
-    return 403;
-  }
-
   /* 비밀번호 암호화 */
+  const hashPwd = await secretPwd(pwd);
 
+  let sql = `
+    INSERT INTO 
+      user 
+      (
+        email, 
+        pwd, 
+        nickname, 
+        birthday
+      ) 
+    VALUES 
+      (?, ?, ?, ?)`;
+
+  var aParameter = [email, hashPwd, nickname, birthday];
   let query = mysql.format(sql, aParameter);
+  console.log(query);
   try {
     let result = pool.query(query);
     console.log("등록 완료");
@@ -46,18 +49,25 @@ async function selectUser(obj) {
   try {
     let result = await pool.query(query);
     var cnt = result.length;
-    if (cnt < 1) {
-      return 202;
-    } else {
-      //중복데이터 있음
-      return 403;
-    }
+    return cnt;
   } catch (e) {
     console.error("getLike Query ERR", e);
     return {};
   }
 }
 
+/* 비밀번호 암호화 */
+async function secretPwd(pwd) {
+  bcrypt.genSalt(saltRounds, function (err, salt) {
+    bcrypt.hash(pwd, salt, function (err, hash) {
+      // Store hash in your password DB.
+      console.log("pwd=> ", pwd, "hash => ", hash);
+      hashPwd = hash;
+    });
+  });
+}
+
 module.exports = {
   insertUser,
+  selectUser,
 };

@@ -1,29 +1,47 @@
 const Koa = require("koa");
 const Router = require("koa-router");
-const koabody = require("koa-body");
+// const koabody = require("koa-body");
 
 const app = new Koa();
 const router = new Router();
 const user = require("./controller/Join");
 
+// body parser
+const bodyParser = require("koa-bodyparser");
+app.use(bodyParser());
+
 if (process.env.NODE_ENV === "develop") {
   require("dotenv").config();
 }
+////////////////////////////////////////////////////
+
+const passport = require("koa-passport");
+require("./model/auth");
+// console.log(passport);
+router.post("/custom/login", function (ctx) {
+  console.log("/custom/login");
+  console.log(ctx);
+  return passport.authenticate("local", function (err, user, info, status) {
+    if (user === false) {
+      console.log("/custom local");
+      ctx.body = { success: false };
+      ctx.throw(401);
+    } else {
+      console.log("/custom local else");
+      ctx.body = { success: true };
+      return "일단 뭐가 된다";
+    }
+  })(ctx);
+});
+////////////////////////////////////////////////////
 
 /* router */
-router.post("/users/join", koabody(), async (ctx) => {
-  var data = ctx.request.body;
-  const statusCode = await user.JoinUser(data);
-  if (statusCode == 200) {
-    data = "회원가입 완료되었습니다.";
-  } else if (statusCode == 400) {
-    data = "필수값이 누락되어있습니다.";
-  } else if (statusCode == 403) {
-    data = "이미 가입되어있는 이메일입니다.";
-  } else {
-    data = "쿼리에러입니다.";
-  }
-  ctx.body = data;
+router.post("/users/join", async (ctx) => {
+  console.log("/users/join");
+  let result = await user.JoinUser(ctx.request.body);
+
+  ctx.status = result.statusCode;
+  ctx.body = result.message;
 });
 
 router.get("/", (ctx, next) => {
@@ -34,6 +52,19 @@ router.get("/", (ctx, next) => {
 app.use(router.routes());
 app.use(router.allowedMethods());
 
+/////////////////////////////////////////////////
+// Require authentication for now
+app.use(function (ctx, next) {
+  console.log("isAuthenticated t");
+  // console.log(ctx);
+  if (ctx.isAuthenticated()) {
+    return next();
+  } else {
+    ctx.redirect("/");
+  }
+});
+
+/////////////////////////////////////////////////
 app.listen(3000, () => {
   console.log("Listening to port 3000!");
 });
